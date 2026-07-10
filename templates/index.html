@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Flower Classifier</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",sans-serif;
+}
+
+:root{
+--bg:#070f0b;
+--card:#0f1e16;
+--card-border:#1e3a2a;
+--accent:#22c55e;
+--accent-light:#4ade80;
+--text-dim:#9fb3a8;
+--track:#16281f;
+}
+
+body{
+background:
+radial-gradient(circle at 8% 15%, rgba(74,222,128,0.06), transparent 35%),
+radial-gradient(circle at 92% 85%, rgba(74,222,128,0.06), transparent 35%),
+var(--bg);
+color:#fff;
+min-height:100vh;
+}
+
+/* ---------- Header ---------- */
+header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:16px 40px;
+background:#0a1610;
+border-bottom:1px solid var(--card-border);
+}
+
+.logo{
+font-size:20px;
+font-weight:700;
+display:flex;
+align-items:center;
+gap:8px;
+}
+
+.logo span{
+color:var(--accent-light);
+}
+
+nav{
+display:flex;
+gap:32px;
+}
+
+nav a{
+color:#e7efe9;
+text-decoration:none;
+font-size:15px;
+font-weight:500;
+padding-bottom:6px;
+border-bottom:2px solid transparent;
+}
+
+nav a.active{
+color:var(--accent-light);
+border-bottom-color:var(--accent-light);
+}
+
+.mode-toggle{
+border:1px solid var(--card-border);
+background:transparent;
+color:#fff;
+padding:8px 16px;
+border-radius:20px;
+font-size:14px;
+font-weight:500;
+display:flex;
+align-items:center;
+gap:6px;
+cursor:pointer;
+}
+
+/* ---------- Hero ---------- */
+.hero{
+text-align:center;
+padding:50px 20px 30px;
+}
+
+.hero h1{
+font-size:42px;
+font-weight:800;
+}
+
+.hero h1 span{
+color:var(--accent-light);
+}
+
+.hero p{
+margin-top:12px;
+color:var(--text-dim);
+font-size:16px;
+}
+
+.divider{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:12px;
+margin-top:22px;
+color:var(--accent-light);
+font-size:14px;
+}
+
+.divider .line{
+width:120px;
+height:1px;
+background:linear-gradient(to right, transparent, var(--card-border), transparent);
+}
+
+/* ---------- Layout ---------- */
+.container{
+max-width:1200px;
+margin:auto;
+padding:10px 30px 40px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:25px;
+align-items:start;
+}
+
+.card{
+background:var(--card);
+border:1px solid var(--card-border);
+border-radius:16px;
+padding:24px;
+}
+
+.card h2{
+margin-bottom:6px;
+color:var(--accent-light);
+font-size:19px;
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.card > p.subtitle{
+color:var(--text-dim);
+font-size:13px;
+margin-bottom:16px;
+}
+
+.icon-badge{
+width:34px;
+height:34px;
+border-radius:9px;
+background:rgba(74,222,128,0.12);
+display:inline-flex;
+align-items:center;
+justify-content:center;
+font-size:16px;
+}
+
+/* ---------- Upload card ---------- */
+.dropzone{
+height:220px;
+border:2px dashed var(--accent);
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+gap:10px;
+border-radius:14px;
+cursor:pointer;
+background:rgba(74,222,128,0.03);
+transition:background .2s;
+}
+
+.dropzone:hover{
+background:#163022;
+}
+
+.dropzone .upload-icon{
+font-size:30px;
+}
+
+.dropzone p{
+color:#d8e7de;
+font-size:14px;
+}
+
+.dropzone p.or{
+color:var(--text-dim);
+font-size:12px;
+}
+
+input[type=file]{
+display:none;
+}
+
+button{
+border:none;
+border-radius:9px;
+cursor:pointer;
+font-weight:700;
+font-size:15px;
+}
+
+#choose{
+padding:10px 26px;
+background:var(--accent);
+color:#06170e;
+}
+
+#choose:hover{
+background:#16a34a;
+}
+
+.predict-btn{
+width:100%;
+margin-top:18px;
+padding:14px;
+background:linear-gradient(90deg,#22c55e,#16a34a);
+color:#06170e;
+font-size:16px;
+}
+
+.predict-btn:hover{
+filter:brightness(1.08);
+}
+
+.section-label{
+display:flex;
+align-items:center;
+gap:8px;
+margin:20px 0 10px;
+color:#e7efe9;
+font-weight:600;
+font-size:15px;
+}
+
+.preview{
+height:280px;
+background:#091611;
+border-radius:12px;
+overflow:hidden;
+border:1px solid var(--card-border);
+}
+
+.preview img{
+width:100%;
+height:100%;
+object-fit:cover;
+}
+
+.tip{
+margin-top:16px;
+padding:14px 16px;
+background:rgba(74,222,128,0.06);
+border:1px solid var(--card-border);
+border-radius:10px;
+font-size:13px;
+color:var(--text-dim);
+display:flex;
+gap:10px;
+}
+
+/* ---------- Prediction card ---------- */
+.predict-top{
+display:flex;
+gap:20px;
+align-items:center;
+}
+
+.predict-top img{
+width:130px;
+height:130px;
+border-radius:50%;
+object-fit:cover;
+border:4px solid var(--accent);
+flex-shrink:0;
+}
+
+.predict-info label{
+display:block;
+color:var(--text-dim);
+font-size:13px;
+margin-bottom:4px;
+}
+
+.predict-info h1{
+font-size:28px;
+color:var(--accent-light);
+margin-bottom:14px;
+display:flex;
+align-items:center;
+gap:8px;
+}
+
+.predict-info .conf-label{
+color:var(--text-dim);
+font-size:13px;
+margin-bottom:2px;
+}
+
+.predict-info .conf-value{
+font-size:26px;
+font-weight:800;
+color:var(--accent-light);
+}
+
+.progress{
+height:9px;
+background:var(--track);
+border-radius:30px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.fill{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#16a34a,#4ade80);
+border-radius:30px;
+}
+
+.conf-tag{
+display:inline-flex;
+align-items:center;
+gap:6px;
+margin-top:10px;
+font-size:12px;
+color:var(--accent-light);
+}
+
+.conf-tag .dot{
+width:7px;
+height:7px;
+border-radius:50%;
+background:var(--accent-light);
+}
+
+/* ---------- Top predictions list ---------- */
+.pred-row{
+display:flex;
+align-items:center;
+gap:14px;
+padding:10px 0;
+}
+
+.rank{
+width:26px;
+height:26px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:12px;
+font-weight:700;
+color:#06170e;
+flex-shrink:0;
+}
+
+.rank.r1{background:#fbbf24;}
+.rank.r2{background:#cbd5e1;}
+.rank.r3{background:#fb923c;}
+.rank.r4, .rank.r5{background:var(--accent);}
+
+.pred-name{
+width:90px;
+font-size:14px;
+flex-shrink:0;
+}
+
+.pred-track{
+flex:1;
+height:8px;
+background:var(--track);
+border-radius:30px;
+overflow:hidden;
+}
+
+.pred-fill{
+height:100%;
+background:linear-gradient(90deg,#16a34a,#4ade80);
+border-radius:30px;
+}
+
+.pred-score{
+width:60px;
+text-align:right;
+font-size:13px;
+color:var(--text-dim);
+flex-shrink:0;
+}
+
+/* ---------- About / info grid ---------- */
+.info-grid{
+display:grid;
+grid-template-columns:1fr 1fr 1fr 1fr;
+gap:18px;
+margin-top:10px;
+}
+
+.info-item{
+display:flex;
+align-items:flex-start;
+gap:10px;
+}
+
+.info-item .ic{
+font-size:16px;
+margin-top:2px;
+}
+
+.info-item label{
+display:block;
+color:var(--text-dim);
+font-size:12px;
+}
+
+.info-item .val{
+font-weight:600;
+font-size:14px;
+}
+
+.description{
+margin-top:18px;
+color:var(--text-dim);
+font-size:14px;
+line-height:1.6;
+padding-top:16px;
+border-top:1px solid var(--card-border);
+}
+
+.description b{
+color:#fff;
+}
+
+/* ---------- Table (for template data like scientific/family/genus, gbif) ---------- */
+table.data-table{
+width:100%;
+margin-top:12px;
+border-collapse:collapse;
+font-size:14px;
+}
+
+table.data-table td{
+padding:9px 4px;
+border-bottom:1px solid var(--card-border);
+}
+
+table.data-table td:first-child{
+color:var(--text-dim);
+width:40%;
+}
+
+footer{
+text-align:center;
+padding:24px;
+color:var(--text-dim);
+font-size:13px;
+border-top:1px solid var(--card-border);
+}
+
+@media(max-width:900px){
+.container{
+grid-template-columns:1fr;
+}
+nav{
+display:none;
+}
+.info-grid{
+grid-template-columns:1fr 1fr;
+}
+.predict-top{
+flex-direction:column;
+text-align:center;
+}
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+<div class="logo">🌸 AI <span>PlantClassifier</span></div>
+
+<button class="mode-toggle" type="button">🌙 Dark Mode</button>
+</header>
+
+<div class="hero">
+<h1>🌸 AI <span>Plant Classifier</span> 🌸</h1>
+<p>Upload a Plant image and let AI predict the Plantspecies for you.</p>
+<div class="divider">
+<div class="line"></div>
+🌸
+<div class="line"></div>
+</div>
+</div>
+
+<div class="container">
+
+<!-- Upload Card -->
+<div class="card">
+
+<h2><span class="icon-badge">📤</span> Upload Plant Image</h2>
+<p class="subtitle">Upload a clear image of a plant (JPG, PNG, JPEG)</p>
+
+<form action="/predict" method="POST" enctype="multipart/form-data">
+
+<div class="dropzone" id="dropzone">
+<div class="upload-icon">☁️⬆️</div>
+<p>Drag & Drop your image here</p>
+<p class="or">or</p>
+<button type="button" id="choose">Choose File</button>
+<input
+type="file"
+name="image"
+id="file"
+accept="image/*">
+</div>
+
+<div class="section-label">🖼️ Preview</div>
+
+<div class="preview">
+<img id="preview"
+     src="https://via.placeholder.com/600x500?text=Preview">
+</div>
+
+<button
+type="submit"
+class="predict-btn">
+Predict Plant
+</button>
+
+</form>
+
+<div class="tip">
+💡 <span>Tip: For best results, upload a clear and high-quality image of the plant.</span>
+</div>
+
+</div>
+
+<!-- Prediction Result Card -->
+<div class="card">
+
+<h2><span class="icon-badge">📈</span> Prediction Result</h2>
+
+<div class="predict-top">
+
+{% if image %}
+<img id="flowerImg"
+     src="{{ url_for('uploaded_file', filename=image) }}">
+{% else %}
+<img id="flowerImg"
+     src="https://via.placeholder.com/200">
+{% endif %}
+
+<div class="predict-info">
+<label>Predicted Plant</label>
+<h1>🌸 {{ flower_name if flower_name else "No Prediction" }}</h1>
+
+<div class="conf-label">Confidence Score</div>
+<div class="conf-value">{{ confidence if confidence else "0" }}%</div>
+
+<div class="progress">
+<div class="fill" style="width:{{ confidence if confidence else 0 }}%;"></div>
+</div>
+
+<div class="conf-tag"><span class="dot"></span> Very High Confidence</div>
+</div>
+
+</div>
+
+<table class="data-table">
+<tr>
+<td>Scientific Name</td>
+<td>{{ scientific_name }}</td>
+</tr>
+<tr>
+<td>Family</td>
+<td>{{ family }}</td>
+</tr>
+<tr>
+<td>Genus</td>
+<td>{{ genus }}</td>
+</tr>
+<tr>
+<td>Common Name</td>
+<td>{{ flower_name }}</td>
+</tr>
+</table>
+
+</div>
+
+<!-- Top Predictions -->
+<div class="card" style="grid-column:1 / -1;">
+<h2><span class="icon-badge">🏆</span> Top Predictions</h2>
+
+{% if predictions %}
+{% for p in predictions %}
+<div class="pred-row">
+<div class="rank r{{ loop.index }}">{{ loop.index }}</div>
+<div class="pred-name">{{ p.name }}</div>
+<div class="pred-track">
+<div class="pred-fill" style="width:{{ p.score }}%;"></div>
+</div>
+<div class="pred-score">{{ p.score }}%</div>
+</div>
+{% endfor %}
+{% else %}
+<p class="subtitle">No predictions yet.</p>
+{% endif %}
+
+</div>
+
+{% if gbif %}
+<!-- About This Plant -->
+<div class="card" style="grid-column:1 / -1;">
+
+<h2><span class="icon-badge">🌿</span> About This Plant</h2>
+
+<div class="info-grid">
+
+<div class="info-item">
+<div class="ic">🧬</div>
+<div>
+<label>Scientific Name</label>
+<div class="val">{{ gbif.scientific_name }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">🌱</div>
+<div>
+<label>Canonical Name</label>
+<div class="val">{{ gbif.canonical_name }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">👑</div>
+<div>
+<label>Kingdom</label>
+<div class="val">{{ gbif.kingdom }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">🧵</div>
+<div>
+<label>Phylum</label>
+<div class="val">{{ gbif.phylum }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">📚</div>
+<div>
+<label>Class</label>
+<div class="val">{{ gbif["class"] }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">🗂️</div>
+<div>
+<label>Order</label>
+<div class="val">{{ gbif.order }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">👪</div>
+<div>
+<label>Family</label>
+<div class="val">{{ gbif.family }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">🔤</div>
+<div>
+<label>Genus</label>
+<div class="val">{{ gbif.genus }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">🌸</div>
+<div>
+<label>Species</label>
+<div class="val">{{ gbif.species }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">📏</div>
+<div>
+<label>Rank</label>
+<div class="val">{{ gbif.rank }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">✅</div>
+<div>
+<label>Status</label>
+<div class="val">{{ gbif.taxonomic_status }}</div>
+</div>
+</div>
+
+<div class="info-item">
+<div class="ic">🌍</div>
+<div>
+<label>Origin</label>
+<div class="val">{{ gbif.origin }}</div>
+</div>
+</div>
+
+</div>
+
+<div class="description">
+<b>Published In:</b> {{ gbif.published_in }}
+</div>
+
+</div>
+{% endif %}
+
+</div>
+
+<footer>
+🌸 Built with ❤️ using Flask + Pl@ntNet API 🌿
+</footer>
+
+<script>
+
+const choose=document.getElementById("choose");
+const file=document.getElementById("file");
+const preview=document.getElementById("preview");
+const drop=document.getElementById("dropzone");
+
+choose.onclick=()=>file.click();
+
+file.onchange=e=>{
+
+const f=e.target.files[0];
+
+if(f){
+
+preview.src=URL.createObjectURL(f);
+
+}
+
+};
+
+drop.ondragover=e=>{
+
+e.preventDefault();
+
+};
+
+drop.ondrop=e=>{
+
+e.preventDefault();
+
+const f=e.dataTransfer.files[0];
+
+file.files=e.dataTransfer.files;
+
+preview.src=URL.createObjectURL(f);
+
+};
+
+</script>
+
+</body>
+</html>
